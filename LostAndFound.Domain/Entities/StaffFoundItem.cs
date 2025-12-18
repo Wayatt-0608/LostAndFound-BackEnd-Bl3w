@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace LostAndFound.Domain.Entities;
@@ -11,17 +11,17 @@ public partial class StaffFoundItem
 
     public int? CategoryId { get; set; }
 
-    public string? Description { get; set; }
-
     public int CampusId { get; set; }
+
+    public string? Description { get; set; }
 
     public DateTime? FoundDate { get; set; }
 
     public string? Status { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
-
     public string? ImageUrl { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
 
     public virtual Campus Campus { get; set; } = null!;
 

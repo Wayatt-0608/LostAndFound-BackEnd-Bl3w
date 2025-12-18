@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace LostAndFound.Domain.Entities;
@@ -15,9 +15,9 @@ public partial class SecurityVerificationDecision
 
     public string? Note { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
-
     public string? EvidenceImageUrl { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
 
     public virtual SecurityVerificationRequest Request { get; set; } = null!;
 

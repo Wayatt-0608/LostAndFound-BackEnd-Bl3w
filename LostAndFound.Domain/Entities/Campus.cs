@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace LostAndFound.Domain.Entities;
@@ -16,6 +16,4 @@ public partial class Campus
     public virtual ICollection<Case> Cases { get; set; } = new List<Case>();
 
     public virtual ICollection<StaffFoundItem> StaffFoundItems { get; set; } = new List<StaffFoundItem>();
-
-    public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

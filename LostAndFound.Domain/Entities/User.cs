@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace LostAndFound.Domain.Entities;
@@ -15,11 +15,9 @@ public partial class User
 
     public int RoleId { get; set; }
 
-    public int CampusId { get; set; }
+    public string? StudentCode { get; set; }
 
     public string? AvatarUrl { get; set; }
-
-    public virtual Campus Campus { get; set; } = null!;
 
     public virtual Role Role { get; set; } = null!;
 

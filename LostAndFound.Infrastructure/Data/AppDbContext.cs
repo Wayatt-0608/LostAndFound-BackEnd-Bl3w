@@ -40,7 +40,7 @@ public partial class AppDbContext : DbContext
     {
         modelBuilder.Entity<Campus>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__campus__3213E83F6917DF25");
+            entity.HasKey(e => e.Id).HasName("PK__campus__3213E83FB22458EE");
 
             entity.ToTable("campus");
 
@@ -58,7 +58,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Case>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__cases__3213E83FF4834FAB");
+            entity.HasKey(e => e.Id).HasName("PK__cases__3213E83F8E3A86CB");
 
             entity.ToTable("cases");
 
@@ -87,21 +87,21 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Campus).WithMany(p => p.Cases)
                 .HasForeignKey(d => d.CampusId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__cases__campus_id__5629CD9C");
+                .HasConstraintName("FK__cases__campus_id__571DF1D5");
 
             entity.HasOne(d => d.FoundItem).WithMany(p => p.Cases)
                 .HasForeignKey(d => d.FoundItemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__cases__found_ite__5535A963");
+                .HasConstraintName("FK__cases__found_ite__5629CD9C");
         });
 
         modelBuilder.Entity<EmailOtp>(entity =>
         {
-            entity.HasKey(e => e.OtpId).HasName("PK__EmailOTP__AEE35435531354E4");
+            entity.HasKey(e => e.OtpId).HasName("PK__EmailOTP__AEE3543507251946");
 
             entity.ToTable("EmailOTP");
 
-            entity.HasIndex(e => new { e.Email, e.Purpose, e.IsUsed, e.ExpiresAt }, "IX_EmailOTP_Email_Purpose_IsUsed");
+            entity.HasIndex(e => new { e.Email, e.Purpose, e.IsUsed, e.ExpiresAt }, "IX_EmailOTP_Email");
 
             entity.Property(e => e.OtpId).HasColumnName("otp_id");
             entity.Property(e => e.CreatedAt)
@@ -127,7 +127,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<ItemCategory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__item_cat__3213E83F22FCFE2B");
+            entity.HasKey(e => e.Id).HasName("PK__item_cat__3213E83F1D4D6F19");
 
             entity.ToTable("item_categories");
 
@@ -142,11 +142,11 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__roles__3213E83F1B845C3A");
+            entity.HasKey(e => e.Id).HasName("PK__roles__3213E83F69439C18");
 
             entity.ToTable("roles");
 
-            entity.HasIndex(e => e.Name, "UQ__roles__72E12F1BE6C8454A").IsUnique();
+            entity.HasIndex(e => e.Name, "UQ__roles__72E12F1BA3E73EA2").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Name)
@@ -156,7 +156,7 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<SecurityVerificationDecision>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__security__3213E83F678D53D2");
+            entity.HasKey(e => e.Id).HasName("PK__security__3213E83F84B136B4");
 
             entity.ToTable("security_verification_decisions");
 
@@ -180,17 +180,17 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Request).WithMany(p => p.SecurityVerificationDecisions)
                 .HasForeignKey(d => d.RequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__security___reque__6754599E");
+                .HasConstraintName("FK__security___reque__68487DD7");
 
             entity.HasOne(d => d.SecurityOfficer).WithMany(p => p.SecurityVerificationDecisions)
                 .HasForeignKey(d => d.SecurityOfficerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__security___secur__68487DD7");
+                .HasConstraintName("FK__security___secur__693CA210");
         });
 
         modelBuilder.Entity<SecurityVerificationRequest>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__security__3213E83F972C229E");
+            entity.HasKey(e => e.Id).HasName("PK__security__3213E83FEDD0E87F");
 
             entity.ToTable("security_verification_requests");
 
@@ -205,17 +205,17 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Case).WithMany(p => p.SecurityVerificationRequests)
                 .HasForeignKey(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__security___case___619B8048");
+                .HasConstraintName("FK__security___case___628FA481");
 
             entity.HasOne(d => d.RequestedByNavigation).WithMany(p => p.SecurityVerificationRequests)
                 .HasForeignKey(d => d.RequestedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__security___reque__628FA481");
+                .HasConstraintName("FK__security___reque__6383C8BA");
         });
 
         modelBuilder.Entity<StaffFoundItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__staff_fo__3213E83F0519C156");
+            entity.HasKey(e => e.Id).HasName("PK__staff_fo__3213E83F159602C4");
 
             entity.ToTable("staff_found_items");
 
@@ -248,21 +248,21 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Campus).WithMany(p => p.StaffFoundItems)
                 .HasForeignKey(d => d.CampusId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__staff_fou__campu__4F7CD00D");
+                .HasConstraintName("FK__staff_fou__campu__5070F446");
 
             entity.HasOne(d => d.Category).WithMany(p => p.StaffFoundItems)
                 .HasForeignKey(d => d.CategoryId)
-                .HasConstraintName("FK__staff_fou__categ__4E88ABD4");
+                .HasConstraintName("FK__staff_fou__categ__4F7CD00D");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.StaffFoundItems)
                 .HasForeignKey(d => d.CreatedBy)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__staff_fou__creat__4D94879B");
+                .HasConstraintName("FK__staff_fou__creat__4E88ABD4");
         });
 
         modelBuilder.Entity<StaffReturnReceipt>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__staff_re__3213E83FF73D2668");
+            entity.HasKey(e => e.Id).HasName("PK__staff_re__3213E83FFCD09AD7");
 
             entity.ToTable("staff_return_receipts");
 
@@ -281,22 +281,22 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.Case).WithMany(p => p.StaffReturnReceipts)
                 .HasForeignKey(d => d.CaseId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__staff_ret__case___6C190EBB");
+                .HasConstraintName("FK__staff_ret__case___6D0D32F4");
 
             entity.HasOne(d => d.Claim).WithMany(p => p.StaffReturnReceipts)
                 .HasForeignKey(d => d.ClaimId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__staff_ret__claim__6D0D32F4");
+                .HasConstraintName("FK__staff_ret__claim__6E01572D");
 
             entity.HasOne(d => d.Staff).WithMany(p => p.StaffReturnReceipts)
                 .HasForeignKey(d => d.StaffId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__staff_ret__staff__6E01572D");
+                .HasConstraintName("FK__staff_ret__staff__6EF57B66");
         });
 
         modelBuilder.Entity<StudentClaim>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__student___3213E83FB362B03F");
+            entity.HasKey(e => e.Id).HasName("PK__student___3213E83FBE452852");
 
             entity.ToTable("student_claims");
 
@@ -322,26 +322,26 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Case).WithMany(p => p.StudentClaims)
                 .HasForeignKey(d => d.CaseId)
-                .HasConstraintName("FK__student_c__case___5DCAEF64");
+                .HasConstraintName("FK__student_c__case___5EBF139D");
 
             entity.HasOne(d => d.FoundItem).WithMany(p => p.StudentClaims)
                 .HasForeignKey(d => d.FoundItemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__student_c__found__5BE2A6F2");
+                .HasConstraintName("FK__student_c__found__5CD6CB2B");
 
             entity.HasOne(d => d.LostReport).WithMany(p => p.StudentClaims)
                 .HasForeignKey(d => d.LostReportId)
-                .HasConstraintName("FK__student_c__lost___5CD6CB2B");
+                .HasConstraintName("FK__student_c__lost___5DCAEF64");
 
             entity.HasOne(d => d.Student).WithMany(p => p.StudentClaims)
                 .HasForeignKey(d => d.StudentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__student_c__stude__5AEE82B9");
+                .HasConstraintName("FK__student_c__stude__5BE2A6F2");
         });
 
         modelBuilder.Entity<StudentLostReport>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__student___3213E83F2F5552F7");
+            entity.HasKey(e => e.Id).HasName("PK__student___3213E83F34277C28");
 
             entity.ToTable("student_lost_reports");
 
@@ -378,21 +378,22 @@ public partial class AppDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__users__3213E83F85AAA5F8");
+            entity.HasKey(e => e.Id).HasName("PK__users__3213E83FC596438A");
 
             entity.ToTable("users");
 
-            entity.HasIndex(e => e.CampusId, "IX_users_campus_id");
-
             entity.HasIndex(e => e.RoleId, "IX_users_role_id");
 
-            entity.HasIndex(e => e.Email, "UQ__users__AB6E6164B96F17FD").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__users__AB6E61643E6F4C56").IsUnique();
+
+            entity.HasIndex(e => e.StudentCode, "UX_users_student_code")
+                .IsUnique()
+                .HasFilter("([student_code] IS NOT NULL)");
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AvatarUrl)
                 .HasMaxLength(500)
                 .HasColumnName("avatar_url");
-            entity.Property(e => e.CampusId).HasColumnName("campus_id");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasColumnName("email");
@@ -403,11 +404,9 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("password_hash");
             entity.Property(e => e.RoleId).HasColumnName("role_id");
-
-            entity.HasOne(d => d.Campus).WithMany(p => p.Users)
-                .HasForeignKey(d => d.CampusId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__users__campus_id__403A8C7D");
+            entity.Property(e => e.StudentCode)
+                .HasMaxLength(20)
+                .HasColumnName("student_code");
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)

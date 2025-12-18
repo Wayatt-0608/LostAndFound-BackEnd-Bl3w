@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace LostAndFound.Domain.Entities;
@@ -17,9 +17,9 @@ public partial class StudentClaim
 
     public string? Status { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
-
     public string? EvidenceImageUrl { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
 
     public virtual Case? Case { get; set; }
 
