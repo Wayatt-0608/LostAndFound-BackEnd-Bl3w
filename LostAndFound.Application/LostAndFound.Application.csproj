@@ -2,6 +2,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LostAndFound.Domain\LostAndFound.Domain.csproj" />
+    <ProjectReference Include="..\LostAndFound.Infrastructure\LostAndFound.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="CloudinaryDotNet" Version="1.27.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
   </ItemGroup>
 
   <PropertyGroup>
