@@ -8,6 +8,7 @@ public class CreateStaffFoundItemFormRequest
     public int CampusId { get; set; }
     public string? Description { get; set; }
     public DateTime? FoundDate { get; set; }
+    public string? FoundLocation { get; set; }
     public IFormFile? Image { get; set; }
 }
 

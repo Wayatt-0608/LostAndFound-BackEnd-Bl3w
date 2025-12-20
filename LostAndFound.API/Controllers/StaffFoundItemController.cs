@@ -78,6 +78,7 @@ public class StaffFoundItemController : ControllerBase
                 CampusId = formRequest.CampusId,
                 Description = formRequest.Description,
                 FoundDate = formRequest.FoundDate,
+                FoundLocation = formRequest.FoundLocation,
                 ImageUrl = imageUrl
             };
 
@@ -170,6 +171,7 @@ public class StaffFoundItemController : ControllerBase
                 CampusId = formRequest.CampusId,
                 Description = formRequest.Description,
                 FoundDate = formRequest.FoundDate,
+                FoundLocation = formRequest.FoundLocation,
                 ImageUrl = imageUrl // Nếu imageUrl là null, service sẽ giữ nguyên ảnh cũ
             };
 

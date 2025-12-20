@@ -27,6 +27,7 @@ public class StaffFoundItemService : IStaffFoundItemService
             CampusId = request.CampusId,
             Description = request.Description,
             FoundDate = request.FoundDate,
+            FoundLocation = request.FoundLocation,
             Status = "STORED", // Mặc định là STORED
             ImageUrl = request.ImageUrl,
             CreatedAt = DateTime.Now
@@ -123,6 +124,7 @@ public class StaffFoundItemService : IStaffFoundItemService
 
         foundItem.Description = request.Description;
         foundItem.FoundDate = request.FoundDate;
+        foundItem.FoundLocation = request.FoundLocation;
 
         // Chỉ cập nhật ImageUrl nếu có giá trị mới
         if (!string.IsNullOrEmpty(request.ImageUrl))
@@ -194,6 +196,7 @@ public class StaffFoundItemService : IStaffFoundItemService
             CampusName = item.Campus?.Name,
             Description = item.Description,
             FoundDate = item.FoundDate,
+            FoundLocation = item.FoundLocation,
             Status = item.Status,
             ImageUrl = item.ImageUrl,
             CreatedAt = item.CreatedAt

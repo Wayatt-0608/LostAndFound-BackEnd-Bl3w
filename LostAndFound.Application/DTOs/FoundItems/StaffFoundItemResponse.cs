@@ -11,6 +11,7 @@ public class StaffFoundItemResponse
     public string? CampusName { get; set; }
     public string? Description { get; set; }
     public DateTime? FoundDate { get; set; }
+    public string? FoundLocation { get; set; }
     public string? Status { get; set; }
     public string? ImageUrl { get; set; }
     public DateTime? CreatedAt { get; set; }
