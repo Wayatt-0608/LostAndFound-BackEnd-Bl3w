@@ -13,13 +13,11 @@ public partial class User
 
     public string PasswordHash { get; set; } = null!;
 
-    public int RoleId { get; set; }
+    public string Role { get; set; } = null!;
 
     public string? StudentCode { get; set; }
 
     public string? AvatarUrl { get; set; }
-
-    public virtual Role Role { get; set; } = null!;
 
     public virtual ICollection<SecurityVerificationDecision> SecurityVerificationDecisions { get; set; } = new List<SecurityVerificationDecision>();
 
