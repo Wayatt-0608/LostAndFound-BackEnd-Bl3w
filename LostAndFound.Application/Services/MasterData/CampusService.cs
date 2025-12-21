@@ -93,6 +93,20 @@ public class CampusService : ICampusService
         if (campus == null)
             return false;
 
+        // Kiểm tra xem campus có đang được sử dụng trong Cases không
+        var isUsedInCases = await _context.Cases.AnyAsync(c => c.CampusId == id);
+        if (isUsedInCases)
+        {
+            throw new InvalidOperationException("Không thể xóa campus này vì nó đang được sử dụng trong các case.");
+        }
+
+        // Kiểm tra xem campus có đang được sử dụng trong StaffFoundItems không
+        var isUsedInFoundItems = await _context.StaffFoundItems.AnyAsync(fi => fi.CampusId == id);
+        if (isUsedInFoundItems)
+        {
+            throw new InvalidOperationException("Không thể xóa campus này vì nó đang được sử dụng trong các đồ nhặt được.");
+        }
+
         _context.Campuses.Remove(campus);
         await _context.SaveChangesAsync();
         return true;

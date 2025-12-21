@@ -2,6 +2,7 @@
 using LostAndFound.Application.Interfaces.MasterData;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LostAndFound.API.Controllers;
 
@@ -85,12 +86,28 @@ public class ItemCategoryController : ControllerBase
     [Authorize(Roles = "Staff")]
     public async Task<IActionResult> Delete(int id)
     {
-        var result = await _itemCategoryService.DeleteAsync(id);
-        if (!result)
+        try
         {
-            return NotFound(new { Message = "Không tìm thấy item category." });
+            var result = await _itemCategoryService.DeleteAsync(id);
+            if (!result)
+            {
+                return NotFound(new { Message = "Không tìm thấy item category." });
+            }
+            return NoContent();
         }
-        return NoContent();
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (DbUpdateException)
+        {
+            // Xử lý lỗi constraint từ database (fallback nếu kiểm tra ở service không bắt được)
+            return BadRequest(new { Message = "Không thể xóa danh mục này vì nó đang được sử dụng trong hệ thống." });
+        }
+        catch (Exception)
+        {
+            return BadRequest(new { Message = "Đã xảy ra lỗi khi xóa item category." });
+        }
     }
 }
 

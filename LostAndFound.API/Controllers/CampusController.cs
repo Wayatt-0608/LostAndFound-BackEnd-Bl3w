@@ -2,6 +2,7 @@
 using LostAndFound.Application.Interfaces.MasterData;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace LostAndFound.API.Controllers;
@@ -130,12 +131,28 @@ public class CampusController : ControllerBase
     [Authorize(Roles = "Staff")]
     public async Task<IActionResult> Delete(int id)
     {
-        var result = await _campusService.DeleteAsync(id);
-        if (!result)
+        try
         {
-            return NotFound(new { Message = "Không tìm thấy campus." });
+            var result = await _campusService.DeleteAsync(id);
+            if (!result)
+            {
+                return NotFound(new { Message = "Không tìm thấy campus." });
+            }
+            return NoContent();
         }
-        return NoContent();
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (DbUpdateException)
+        {
+            // Xử lý lỗi constraint từ database (fallback nếu kiểm tra ở service không bắt được)
+            return BadRequest(new { Message = "Không thể xóa campus này vì nó đang được sử dụng trong hệ thống." });
+        }
+        catch (Exception)
+        {
+            return BadRequest(new { Message = "Đã xảy ra lỗi khi xóa campus." });
+        }
     }
 }
 
