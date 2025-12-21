@@ -77,6 +77,7 @@ public class StudentLostReportController : ControllerBase
                 CategoryId = formRequest.CategoryId,
                 Description = formRequest.Description,
                 LostDate = formRequest.LostDate,
+                LostLocation = formRequest.LostLocation,
                 ImageUrl = imageUrl
             };
 

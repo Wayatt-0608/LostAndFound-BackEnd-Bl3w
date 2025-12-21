@@ -30,4 +30,6 @@ public partial class User
     public virtual ICollection<StudentClaim> StudentClaims { get; set; } = new List<StudentClaim>();
 
     public virtual ICollection<StudentLostReport> StudentLostReports { get; set; } = new List<StudentLostReport>();
+
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }
