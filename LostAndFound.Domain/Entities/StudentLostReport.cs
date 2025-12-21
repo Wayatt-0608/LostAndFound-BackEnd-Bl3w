@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace LostAndFound.Domain.Entities;
@@ -18,6 +18,8 @@ public partial class StudentLostReport
     public string? ImageUrl { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+
+    public string? LostLocation { get; set; }
 
     public virtual ItemCategory? Category { get; set; }
 

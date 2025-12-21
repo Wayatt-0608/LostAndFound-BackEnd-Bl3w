@@ -7,10 +7,6 @@ namespace LostAndFound.Infrastructure.Data;
 
 public partial class AppDbContext : DbContext
 {
-    public AppDbContext()
-    {
-    }
-
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
@@ -23,6 +19,8 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<EmailOtp> EmailOtps { get; set; }
 
     public virtual DbSet<ItemCategory> ItemCategories { get; set; }
+
+    public virtual DbSet<Notification> Notifications { get; set; }
 
     public virtual DbSet<SecurityVerificationDecision> SecurityVerificationDecisions { get; set; }
 
@@ -37,12 +35,6 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<StudentLostReport> StudentLostReports { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-
-    public virtual DbSet<Notification> Notifications { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=.\\SQLEXPRESS;Database=LostFoundDB;User ID=sa;Password=12345;MultipleActiveResultSets=true;TrustServerCertificate=True;Encrypt=False");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -148,6 +140,49 @@ public partial class AppDbContext : DbContext
                 .HasColumnName("name");
         });
 
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__notifica__3213E83F96F20579");
+
+            entity.ToTable("notifications");
+
+            entity.HasIndex(e => e.Type, "IX_notifications_type");
+
+            entity.HasIndex(e => e.UserId, "IX_notifications_user_id");
+
+            entity.HasIndex(e => new { e.UserId, e.CreatedAt }, "IX_notifications_user_id_created_at").IsDescending(false, true);
+
+            entity.HasIndex(e => new { e.UserId, e.IsRead }, "IX_notifications_user_id_is_read");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.IsRead)
+                .HasDefaultValue(false)
+                .HasColumnName("is_read");
+            entity.Property(e => e.Message)
+                .HasMaxLength(1000)
+                .HasColumnName("message");
+            entity.Property(e => e.RelatedEntityId).HasColumnName("related_entity_id");
+            entity.Property(e => e.RelatedEntityType)
+                .HasMaxLength(50)
+                .HasColumnName("related_entity_type");
+            entity.Property(e => e.Title)
+                .HasMaxLength(200)
+                .HasColumnName("title");
+            entity.Property(e => e.Type)
+                .HasMaxLength(50)
+                .HasColumnName("type");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__notificat__user___73BA3083");
+        });
+
         modelBuilder.Entity<SecurityVerificationDecision>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__security__3213E83FD2A1D5EA");
@@ -231,6 +266,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.FoundDate)
                 .HasColumnType("datetime")
                 .HasColumnName("found_date");
+            entity.Property(e => e.FoundLocation)
+                .HasMaxLength(200)
+                .HasColumnName("found_location");
             entity.Property(e => e.ImageUrl)
                 .HasMaxLength(500)
                 .HasColumnName("image_url");
@@ -358,6 +396,9 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.LostDate)
                 .HasColumnType("datetime")
                 .HasColumnName("lost_date");
+            entity.Property(e => e.LostLocation)
+                .HasMaxLength(200)
+                .HasColumnName("lost_location");
             entity.Property(e => e.StudentId).HasColumnName("student_id");
 
             entity.HasOne(d => d.Category).WithMany(p => p.StudentLostReports)
@@ -403,47 +444,6 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.StudentCode)
                 .HasMaxLength(20)
                 .HasColumnName("student_code");
-        });
-
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__notifica__3213E83F4F7CD00D");
-
-            entity.ToTable("notifications");
-
-            entity.HasIndex(e => e.UserId, "IX_notifications_user_id");
-
-            entity.HasIndex(e => new { e.UserId, e.IsRead }, "IX_notifications_user_id_is_read");
-
-            entity.HasIndex(e => e.Type, "IX_notifications_type");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.UserId).HasColumnName("user_id");
-            entity.Property(e => e.Title)
-                .HasMaxLength(200)
-                .HasColumnName("title");
-            entity.Property(e => e.Message)
-                .HasMaxLength(1000)
-                .HasColumnName("message");
-            entity.Property(e => e.Type)
-                .HasMaxLength(50)
-                .HasColumnName("type");
-            entity.Property(e => e.RelatedEntityId).HasColumnName("related_entity_id");
-            entity.Property(e => e.RelatedEntityType)
-                .HasMaxLength(50)
-                .HasColumnName("related_entity_type");
-            entity.Property(e => e.IsRead)
-                .HasDefaultValue(false)
-                .HasColumnName("is_read");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime")
-                .HasColumnName("created_at");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__notificat__user___5AEE82B9");
         });
 
         OnModelCreatingPartial(modelBuilder);

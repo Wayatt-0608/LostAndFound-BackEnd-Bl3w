@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 
 namespace LostAndFound.Domain.Entities;
 
@@ -18,11 +19,9 @@ public partial class Notification
 
     public string? RelatedEntityType { get; set; }
 
-    public bool IsRead { get; set; }
+    public bool? IsRead { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
     public virtual User User { get; set; } = null!;
 }
-
-

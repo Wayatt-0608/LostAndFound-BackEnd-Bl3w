@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace LostAndFound.Domain.Entities;
@@ -19,6 +19,8 @@ public partial class User
 
     public string? AvatarUrl { get; set; }
 
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
     public virtual ICollection<SecurityVerificationDecision> SecurityVerificationDecisions { get; set; } = new List<SecurityVerificationDecision>();
 
     public virtual ICollection<SecurityVerificationRequest> SecurityVerificationRequests { get; set; } = new List<SecurityVerificationRequest>();
@@ -30,6 +32,4 @@ public partial class User
     public virtual ICollection<StudentClaim> StudentClaims { get; set; } = new List<StudentClaim>();
 
     public virtual ICollection<StudentLostReport> StudentLostReports { get; set; } = new List<StudentLostReport>();
-
-    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }
