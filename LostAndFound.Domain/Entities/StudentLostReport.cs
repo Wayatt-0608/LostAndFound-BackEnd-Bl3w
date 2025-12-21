@@ -15,6 +15,8 @@ public partial class StudentLostReport
 
     public DateTime? LostDate { get; set; }
 
+    public string? LostLocation { get; set; }
+
     public string? ImageUrl { get; set; }
 
     public DateTime? CreatedAt { get; set; }
