@@ -17,10 +17,10 @@ public class ItemCategoryController : ControllerBase
     }
 
     /// <summary>
-    /// Lấy danh sách tất cả item categories (chỉ Staff)
+    /// Lấy danh sách tất cả item categories 
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles = "Student,Staff,SecurityOfficer")]
     public async Task<IActionResult> GetAll()
     {
         var categories = await _itemCategoryService.GetAllAsync();
@@ -31,7 +31,7 @@ public class ItemCategoryController : ControllerBase
     /// Lấy item category theo ID (chỉ Staff)
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles = "Student,Staff,SecurityOfficer")]
     public async Task<IActionResult> GetById(int id)
     {
         var category = await _itemCategoryService.GetByIdAsync(id);
