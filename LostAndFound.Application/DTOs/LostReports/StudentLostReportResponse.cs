@@ -20,6 +20,8 @@ public class StudentLostReportResponse
     public string? ImageUrl { get; set; }
     public DateTime? CreatedAt { get; set; }
     public bool HasClaims { get; set; } // Có claim nào chưa
+    public string? IdentifyingFeatures { get; set; } // Chỉ hiển thị cho Staff/Security
+    public string? ClaimPassword { get; set; } // Chỉ hiển thị cho Staff/Security
 }
 
 

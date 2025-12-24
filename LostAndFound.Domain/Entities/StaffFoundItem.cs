@@ -25,6 +25,10 @@ public partial class StaffFoundItem
 
     public string? FoundLocation { get; set; }
 
+    public string? IdentifyingFeatures { get; set; }
+
+    public string? ClaimPassword { get; set; }
+
     public virtual Campus Campus { get; set; } = null!;
 
     public virtual ICollection<Case> Cases { get; set; } = new List<Case>();

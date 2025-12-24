@@ -8,5 +8,7 @@ public class CreateStaffFoundItemRequest
     public DateTime? FoundDate { get; set; }
     public string? FoundLocation { get; set; }
     public string? ImageUrl { get; set; } // Được set sau khi upload từ Controller
+    public string? IdentifyingFeatures { get; set; }
+    public string? ClaimPassword { get; set; } // Plain text, will be hashed in service
 }
 

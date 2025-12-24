@@ -10,5 +10,7 @@ public class CreateStaffFoundItemFormRequest
     public DateTime? FoundDate { get; set; }
     public string? FoundLocation { get; set; }
     public IFormFile? Image { get; set; }
+    public string? IdentifyingFeatures { get; set; }
+    public string? ClaimPassword { get; set; } // Plain text, will be hashed in service
 }
 

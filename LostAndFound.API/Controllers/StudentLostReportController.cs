@@ -78,7 +78,9 @@ public class StudentLostReportController : ControllerBase
                 Description = formRequest.Description,
                 LostDate = formRequest.LostDate,
                 LostLocation = formRequest.LostLocation,
-                ImageUrl = imageUrl
+                ImageUrl = imageUrl,
+                IdentifyingFeatures = formRequest.IdentifyingFeatures,
+                ClaimPassword = formRequest.ClaimPassword
             };
 
             var report = await _service.CreateAsync(studentId, request);
@@ -109,7 +111,8 @@ public class StudentLostReportController : ControllerBase
     [Authorize(Roles = "Staff")]
     public async Task<IActionResult> GetAll([FromQuery] int? categoryId)
     {
-        var reports = await _service.GetAllAsync(categoryId);
+        // Staff mặc định được xem sensitive data
+        var reports = await _service.GetAllAsync(categoryId, includeSensitiveData: true);
         return Ok(reports);
     }
 
@@ -124,8 +127,11 @@ public class StudentLostReportController : ControllerBase
 
         // Student chỉ xem được của mình, Staff có thể xem tất cả
         int? studentId = userRole == "Student" ? userId : null;
+        
+        // Chỉ Staff/Security được xem sensitive data
+        bool includeSensitiveData = userRole == "Staff" || userRole == "SecurityOfficer";
 
-        var report = await _service.GetByIdAsync(id, studentId);
+        var report = await _service.GetByIdAsync(id, studentId, includeSensitiveData);
         if (report == null)
         {
             return NotFound(new { Message = "Không tìm thấy báo mất." });
@@ -182,7 +188,9 @@ public class StudentLostReportController : ControllerBase
                 Description = formRequest.Description,
                 LostDate = formRequest.LostDate,
                 LostLocation = formRequest.LostLocation,
-                ImageUrl = imageUrl // Nếu imageUrl là null, service sẽ giữ nguyên ảnh cũ
+                ImageUrl = imageUrl, // Nếu imageUrl là null, service sẽ giữ nguyên ảnh cũ
+                IdentifyingFeatures = formRequest.IdentifyingFeatures,
+                ClaimPassword = formRequest.ClaimPassword
             };
 
             var report = await _service.UpdateAsync(id, studentId, request);

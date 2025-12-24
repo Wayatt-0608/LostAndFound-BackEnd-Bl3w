@@ -21,6 +21,10 @@ public partial class StudentLostReport
 
     public string? LostLocation { get; set; }
 
+    public string? IdentifyingFeatures { get; set; }
+
+    public string? ClaimPassword { get; set; }
+
     public virtual ItemCategory? Category { get; set; }
 
     public virtual User Student { get; set; } = null!;

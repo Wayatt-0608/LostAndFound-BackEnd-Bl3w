@@ -79,7 +79,9 @@ public class StaffFoundItemController : ControllerBase
                 Description = formRequest.Description,
                 FoundDate = formRequest.FoundDate,
                 FoundLocation = formRequest.FoundLocation,
-                ImageUrl = imageUrl
+                ImageUrl = imageUrl,
+                IdentifyingFeatures = formRequest.IdentifyingFeatures,
+                ClaimPassword = formRequest.ClaimPassword
             };
 
             var foundItem = await _service.CreateAsync(createdBy, request);
@@ -102,12 +104,14 @@ public class StaffFoundItemController : ControllerBase
     {
         // Chỉ hiển thị đồ nhặt được có status = STORED cho Student
         var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        bool includeSensitiveData = userRole == "Staff" || userRole == "SecurityOfficer";
+        
         if (userRole == "Student")
         {
             status = "STORED"; // Force chỉ hiển thị STORED cho Student
         }
 
-        var items = await _service.GetAllAsync(campusId, status, categoryId);
+        var items = await _service.GetAllAsync(campusId, status, categoryId, includeSensitiveData);
         return Ok(items);
     }
 
@@ -117,7 +121,11 @@ public class StaffFoundItemController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var foundItem = await _service.GetByIdAsync(id);
+        var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+        // Chỉ Staff/Security được xem sensitive data
+        bool includeSensitiveData = userRole == "Staff" || userRole == "SecurityOfficer";
+        
+        var foundItem = await _service.GetByIdAsync(id, includeSensitiveData);
         if (foundItem == null)
         {
             return NotFound(new { Message = "Không tìm thấy đồ nhặt được." });
@@ -172,7 +180,9 @@ public class StaffFoundItemController : ControllerBase
                 Description = formRequest.Description,
                 FoundDate = formRequest.FoundDate,
                 FoundLocation = formRequest.FoundLocation,
-                ImageUrl = imageUrl // Nếu imageUrl là null, service sẽ giữ nguyên ảnh cũ
+                ImageUrl = imageUrl, // Nếu imageUrl là null, service sẽ giữ nguyên ảnh cũ
+                IdentifyingFeatures = formRequest.IdentifyingFeatures,
+                ClaimPassword = formRequest.ClaimPassword
             };
 
             var foundItem = await _service.UpdateAsync(id, request);

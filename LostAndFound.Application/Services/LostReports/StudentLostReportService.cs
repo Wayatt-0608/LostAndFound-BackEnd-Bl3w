@@ -31,6 +31,8 @@ public class StudentLostReportService : IStudentLostReportService
             LostDate = request.LostDate,
             LostLocation = request.LostLocation,
             ImageUrl = request.ImageUrl,
+            IdentifyingFeatures = request.IdentifyingFeatures,
+            ClaimPassword = request.ClaimPassword, // Lưu plain text để staff có thể thấy
             CreatedAt = DateTime.Now
         };
 
@@ -49,7 +51,8 @@ public class StudentLostReportService : IStudentLostReportService
         var hasClaims = await _context.StudentClaims
             .AnyAsync(c => c.LostReportId == report.Id);
 
-        return MapToResponse(report, hasClaims);
+        // Student không được xem sensitive data
+        return MapToResponse(report, hasClaims, includeSensitiveData: false);
     }
 
     public async Task<IEnumerable<StudentLostReportResponse>> GetMyReportsAsync(int studentId)
@@ -74,10 +77,11 @@ public class StudentLostReportService : IStudentLostReportService
             .GroupBy(c => c.LostReportId)
             .ToDictionaryAsync(g => g.Key!.Value, g => g.Count() > 0);
 
-        return reports.Select(r => MapToResponse(r, claimsCount.GetValueOrDefault(r.Id, false)));
+        // Student không được xem sensitive data
+        return reports.Select(r => MapToResponse(r, claimsCount.GetValueOrDefault(r.Id, false), includeSensitiveData: false));
     }
 
-    public async Task<IEnumerable<StudentLostReportResponse>> GetAllAsync(int? categoryId = null)
+    public async Task<IEnumerable<StudentLostReportResponse>> GetAllAsync(int? categoryId = null, bool includeSensitiveData = true)
     {
         // Lấy các lost report IDs đã có claim được approve (sẽ loại bỏ)
         var approvedClaimReportIds = await _context.StudentClaims
@@ -108,10 +112,11 @@ public class StudentLostReportService : IStudentLostReportService
             .GroupBy(c => c.LostReportId)
             .ToDictionaryAsync(g => g.Key!.Value, g => g.Count() > 0);
 
-        return reports.Select(r => MapToResponse(r, claimsCount.GetValueOrDefault(r.Id, false)));
+        // Staff mặc định được xem sensitive data, nhưng có thể control qua parameter
+        return reports.Select(r => MapToResponse(r, claimsCount.GetValueOrDefault(r.Id, false), includeSensitiveData));
     }
 
-    public async Task<StudentLostReportResponse?> GetByIdAsync(int id, int? studentId = null)
+    public async Task<StudentLostReportResponse?> GetByIdAsync(int id, int? studentId = null, bool includeSensitiveData = false)
     {
         var query = _context.StudentLostReports
             .Include(r => r.Student)
@@ -131,7 +136,8 @@ public class StudentLostReportService : IStudentLostReportService
         var hasClaims = await _context.StudentClaims
             .AnyAsync(c => c.LostReportId == id);
 
-        return MapToResponse(report, hasClaims);
+        // includeSensitiveData được pass từ controller dựa trên role
+        return MapToResponse(report, hasClaims, includeSensitiveData);
     }
 
     public async Task<StudentLostReportResponse?> UpdateAsync(int id, int studentId, UpdateStudentLostReportRequest request)
@@ -155,11 +161,19 @@ public class StudentLostReportService : IStudentLostReportService
         report.CategoryId = request.CategoryId;
         report.Description = request.Description;
         report.LostDate = request.LostDate;
+        report.LostLocation = request.LostLocation;
+        report.IdentifyingFeatures = request.IdentifyingFeatures;
 
         // Chỉ cập nhật ImageUrl nếu có giá trị mới (nếu upload ảnh mới)
         if (!string.IsNullOrEmpty(request.ImageUrl))
         {
             report.ImageUrl = request.ImageUrl;
+        }
+
+        // Cập nhật password mới (plain text)
+        if (request.ClaimPassword != null)
+        {
+            report.ClaimPassword = request.ClaimPassword;
         }
 
         _context.StudentLostReports.Update(report);
@@ -174,7 +188,8 @@ public class StudentLostReportService : IStudentLostReportService
             .Reference(r => r.Category)
             .LoadAsync();
 
-        return MapToResponse(report, false);
+        // Student không được xem sensitive data
+        return MapToResponse(report, false, includeSensitiveData: false);
     }
 
     public async Task<bool> DeleteAsync(int id, int studentId)
@@ -200,9 +215,9 @@ public class StudentLostReportService : IStudentLostReportService
         return true;
     }
 
-    private static StudentLostReportResponse MapToResponse(StudentLostReport report, bool hasClaims)
+    private static StudentLostReportResponse MapToResponse(StudentLostReport report, bool hasClaims, bool includeSensitiveData = false)
     {
-        return new StudentLostReportResponse
+        var response = new StudentLostReportResponse
         {
             Id = report.Id,
             StudentId = report.StudentId,
@@ -217,6 +232,15 @@ public class StudentLostReportService : IStudentLostReportService
             CreatedAt = report.CreatedAt,
             HasClaims = hasClaims
         };
+
+        // Chỉ hiển thị IdentifyingFeatures và ClaimPassword cho Staff/Security
+        if (includeSensitiveData)
+        {
+            response.IdentifyingFeatures = report.IdentifyingFeatures;
+            response.ClaimPassword = report.ClaimPassword; // Plain text để staff có thể thấy
+        }
+
+        return response;
     }
 }
 

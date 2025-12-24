@@ -30,6 +30,8 @@ public class StaffFoundItemService : IStaffFoundItemService
             FoundLocation = request.FoundLocation,
             Status = "STORED", // Mặc định là STORED
             ImageUrl = request.ImageUrl,
+            IdentifyingFeatures = request.IdentifyingFeatures,
+            ClaimPassword = request.ClaimPassword, // Lưu plain text để staff có thể thấy
             CreatedAt = DateTime.Now
         };
 
@@ -52,10 +54,11 @@ public class StaffFoundItemService : IStaffFoundItemService
             .Reference(f => f.Campus)
             .LoadAsync();
 
-        return MapToResponse(foundItem);
+        // Staff mặc định được xem sensitive data
+        return MapToResponse(foundItem, includeSensitiveData: true);
     }
 
-    public async Task<IEnumerable<StaffFoundItemResponse>> GetAllAsync(int? campusId = null, string? status = null, int? categoryId = null)
+    public async Task<IEnumerable<StaffFoundItemResponse>> GetAllAsync(int? campusId = null, string? status = null, int? categoryId = null, bool includeSensitiveData = true)
     {
         var query = _context.StaffFoundItems
             .Include(f => f.CreatedByNavigation)
@@ -83,10 +86,10 @@ public class StaffFoundItemService : IStaffFoundItemService
             .OrderByDescending(f => f.CreatedAt)
             .ToListAsync();
 
-        return items.Select(MapToResponse);
+        return items.Select(item => MapToResponse(item, includeSensitiveData));
     }
 
-    public async Task<StaffFoundItemResponse?> GetByIdAsync(int id)
+    public async Task<StaffFoundItemResponse?> GetByIdAsync(int id, bool includeSensitiveData = true)
     {
         var foundItem = await _context.StaffFoundItems
             .Include(f => f.CreatedByNavigation)
@@ -97,7 +100,7 @@ public class StaffFoundItemService : IStaffFoundItemService
         if (foundItem == null)
             return null;
 
-        return MapToResponse(foundItem);
+        return MapToResponse(foundItem, includeSensitiveData);
     }
 
     public async Task<StaffFoundItemResponse?> UpdateAsync(int id, UpdateStaffFoundItemRequest request)
@@ -125,11 +128,18 @@ public class StaffFoundItemService : IStaffFoundItemService
         foundItem.Description = request.Description;
         foundItem.FoundDate = request.FoundDate;
         foundItem.FoundLocation = request.FoundLocation;
+        foundItem.IdentifyingFeatures = request.IdentifyingFeatures;
 
         // Chỉ cập nhật ImageUrl nếu có giá trị mới
         if (!string.IsNullOrEmpty(request.ImageUrl))
         {
             foundItem.ImageUrl = request.ImageUrl;
+        }
+
+        // Cập nhật password mới (plain text)
+        if (request.ClaimPassword != null)
+        {
+            foundItem.ClaimPassword = request.ClaimPassword;
         }
 
         _context.StaffFoundItems.Update(foundItem);
@@ -148,7 +158,7 @@ public class StaffFoundItemService : IStaffFoundItemService
             .Reference(f => f.Campus)
             .LoadAsync();
 
-        return MapToResponse(foundItem);
+        return MapToResponse(foundItem, includeSensitiveData: true);
     }
 
     public async Task<StaffFoundItemResponse?> UpdateStatusAsync(int id, string status)
@@ -180,12 +190,12 @@ public class StaffFoundItemService : IStaffFoundItemService
             .Reference(f => f.Campus)
             .LoadAsync();
 
-        return MapToResponse(foundItem);
+        return MapToResponse(foundItem, includeSensitiveData: true);
     }
 
-    private static StaffFoundItemResponse MapToResponse(StaffFoundItem item)
+    private static StaffFoundItemResponse MapToResponse(StaffFoundItem item, bool includeSensitiveData = true)
     {
-        return new StaffFoundItemResponse
+        var response = new StaffFoundItemResponse
         {
             Id = item.Id,
             CreatedBy = item.CreatedBy,
@@ -201,6 +211,15 @@ public class StaffFoundItemService : IStaffFoundItemService
             ImageUrl = item.ImageUrl,
             CreatedAt = item.CreatedAt
         };
+
+        // Chỉ hiển thị IdentifyingFeatures và ClaimPassword khi includeSensitiveData = true
+        if (includeSensitiveData)
+        {
+            response.IdentifyingFeatures = item.IdentifyingFeatures;
+            response.ClaimPassword = item.ClaimPassword; // Plain text để staff có thể thấy
+        }
+
+        return response;
     }
 }
 

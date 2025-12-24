@@ -15,5 +15,7 @@ public class StaffFoundItemResponse
     public string? Status { get; set; }
     public string? ImageUrl { get; set; }
     public DateTime? CreatedAt { get; set; }
+    public string? IdentifyingFeatures { get; set; }
+    public string? ClaimPassword { get; set; } // Chỉ hiển thị cho Staff/Security
 }
 

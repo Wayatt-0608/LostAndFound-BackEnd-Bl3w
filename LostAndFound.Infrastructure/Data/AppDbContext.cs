@@ -269,6 +269,12 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.FoundLocation)
                 .HasMaxLength(200)
                 .HasColumnName("found_location");
+            entity.Property(e => e.IdentifyingFeatures)
+                .HasMaxLength(500)
+                .HasColumnName("identifying_features");
+            entity.Property(e => e.ClaimPassword)
+                .HasMaxLength(255)
+                .HasColumnName("claim_password");
             entity.Property(e => e.ImageUrl)
                 .HasMaxLength(500)
                 .HasColumnName("image_url");
@@ -399,6 +405,12 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.LostLocation)
                 .HasMaxLength(200)
                 .HasColumnName("lost_location");
+            entity.Property(e => e.IdentifyingFeatures)
+                .HasMaxLength(500)
+                .HasColumnName("identifying_features");
+            entity.Property(e => e.ClaimPassword)
+                .HasMaxLength(255)
+                .HasColumnName("claim_password");
             entity.Property(e => e.StudentId).HasColumnName("student_id");
 
             entity.HasOne(d => d.Category).WithMany(p => p.StudentLostReports)

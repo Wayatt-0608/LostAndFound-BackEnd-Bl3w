@@ -11,8 +11,8 @@ public interface IStudentLostReportService
 {
     Task<StudentLostReportResponse> CreateAsync(int studentId, CreateStudentLostReportRequest request);
     Task<IEnumerable<StudentLostReportResponse>> GetMyReportsAsync(int studentId);
-    Task<IEnumerable<StudentLostReportResponse>> GetAllAsync(int? categoryId = null);
-    Task<StudentLostReportResponse?> GetByIdAsync(int id, int? studentId = null);
+    Task<IEnumerable<StudentLostReportResponse>> GetAllAsync(int? categoryId = null, bool includeSensitiveData = true);
+    Task<StudentLostReportResponse?> GetByIdAsync(int id, int? studentId = null, bool includeSensitiveData = false);
     Task<StudentLostReportResponse?> UpdateAsync(int id, int studentId, UpdateStudentLostReportRequest request);
     Task<bool> DeleteAsync(int id, int studentId);
 }

@@ -13,6 +13,8 @@ public class UpdateStudentLostReportRequest
     public DateTime? LostDate { get; set; }
     public string? LostLocation { get; set; }
     public string? ImageUrl { get; set; } // Được set sau khi upload từ Controller
+    public string? IdentifyingFeatures { get; set; }
+    public string? ClaimPassword { get; set; } // Plain text, will be hashed in service
 }
 
 
