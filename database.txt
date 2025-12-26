@@ -1,0 +1,295 @@
+/* =====================================================
+   RESET DATABASE
+===================================================== */
+IF DB_ID('LostFoundDB') IS NOT NULL
+BEGIN
+    ALTER DATABASE LostFoundDB SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE LostFoundDB;
+END;
+GO
+
+CREATE DATABASE LostFoundDB;
+GO
+
+USE LostFoundDB;
+GO
+
+/* =====================================================
+   MASTER DATA
+===================================================== */
+
+-- CAMPUS
+CREATE TABLE campus (
+    id INT IDENTITY PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL,
+    location NVARCHAR(200),
+    image_url NVARCHAR(500) NULL
+);
+
+--------------------------------------------------------
+
+-- ITEM CATEGORIES
+CREATE TABLE item_categories (
+    id INT IDENTITY PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL,
+    icon_url NVARCHAR(500) NULL
+);
+
+--------------------------------------------------------
+/* =====================================================
+   USERS
+===================================================== */
+
+CREATE TABLE users (
+    id INT IDENTITY PRIMARY KEY,
+    full_name NVARCHAR(100),
+    email NVARCHAR(100) UNIQUE NOT NULL,
+    password_hash NVARCHAR(255) NOT NULL,
+
+    role NVARCHAR(20) NOT NULL
+        CHECK (role IN ('Student', 'Staff', 'SecurityOfficer')),
+
+    student_code NVARCHAR(20) NULL,
+    avatar_url NVARCHAR(500) NULL
+);
+
+-- Student code unique (chỉ khi không NULL)
+CREATE UNIQUE INDEX UX_users_student_code
+ON users(student_code)
+WHERE student_code IS NOT NULL;
+
+-- Student bắt buộc có student_code
+ALTER TABLE users
+ADD CONSTRAINT CK_users_student_code
+CHECK (
+    (role = 'Student' AND student_code IS NOT NULL)
+ OR (role <> 'Student' AND student_code IS NULL)
+);
+
+--------------------------------------------------------
+/* =====================================================
+   EMAIL OTP
+===================================================== */
+
+CREATE TABLE EmailOTP (
+    otp_id INT IDENTITY PRIMARY KEY,
+    email NVARCHAR(255) NOT NULL,
+    otp_code NVARCHAR(50) NOT NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+    expires_at DATETIME NOT NULL,
+    is_used BIT DEFAULT 0,
+    purpose NVARCHAR(50) NOT NULL
+);
+
+CREATE INDEX IX_EmailOTP_Email
+ON EmailOTP (email, purpose, is_used, expires_at);
+
+--------------------------------------------------------
+/* =====================================================
+   STUDENT LOST REPORTS
+===================================================== */
+
+CREATE TABLE student_lost_reports (
+    id INT IDENTITY PRIMARY KEY,
+    student_id INT NOT NULL,
+    category_id INT NULL,
+
+    description NVARCHAR(500),
+    identifying_features NVARCHAR(500) NULL,   -- ⭐ Đặc điểm nhận dạng
+    claim_password NVARCHAR(255) NULL,          -- ⭐ Mật khẩu xác minh (hash)
+
+    lost_date DATETIME,
+    lost_location NVARCHAR(200) NULL,
+
+    image_url NVARCHAR(500) NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (student_id) REFERENCES users(id),
+    FOREIGN KEY (category_id) REFERENCES item_categories(id)
+);
+
+--------------------------------------------------------
+/* =====================================================
+   FOUND ITEMS (STAFF / SECURITY)
+===================================================== */
+
+CREATE TABLE staff_found_items (
+    id INT IDENTITY PRIMARY KEY,
+    created_by INT NOT NULL,
+    category_id INT NULL,
+    campus_id INT NOT NULL,
+
+    description NVARCHAR(500),
+    identifying_features NVARCHAR(500) NULL,   -- ⭐ Đặc điểm nhận dạng
+    claim_password NVARCHAR(255) NULL,          -- ⭐ Mật khẩu xác minh (hash)
+
+    found_date DATETIME,
+    found_location NVARCHAR(200) NULL,
+
+    status NVARCHAR(20) DEFAULT 'STORED'
+        CHECK (status IN ('STORED','RETURNED')),
+
+    image_url NVARCHAR(500) NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (created_by) REFERENCES users(id),
+    FOREIGN KEY (category_id) REFERENCES item_categories(id),
+    FOREIGN KEY (campus_id) REFERENCES campus(id)
+);
+
+--------------------------------------------------------
+/* =====================================================
+   CASES
+===================================================== */
+
+CREATE TABLE cases (
+    id INT IDENTITY PRIMARY KEY,
+    found_item_id INT NOT NULL,
+    campus_id INT NOT NULL,
+
+    status NVARCHAR(20)
+        CHECK (status IN ('OPEN','IN_PROGRESS','COMPLETED','FAILED')),
+
+    total_claims INT DEFAULT 0,
+    successful_claim_id INT NULL,
+
+    opened_at DATETIME DEFAULT GETDATE(),
+    closed_at DATETIME NULL,
+
+    FOREIGN KEY (found_item_id) REFERENCES staff_found_items(id),
+    FOREIGN KEY (campus_id) REFERENCES campus(id)
+);
+
+--------------------------------------------------------
+/* =====================================================
+   STUDENT CLAIMS
+===================================================== */
+
+CREATE TABLE student_claims (
+    id INT IDENTITY PRIMARY KEY,
+    student_id INT NOT NULL,
+    found_item_id INT NOT NULL,
+    lost_report_id INT NULL,
+    case_id INT NULL,
+
+    status NVARCHAR(20)
+        CHECK (status IN ('PENDING','APPROVED','REJECTED')),
+
+    evidence_image_url NVARCHAR(500) NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (student_id) REFERENCES users(id),
+    FOREIGN KEY (found_item_id) REFERENCES staff_found_items(id),
+    FOREIGN KEY (lost_report_id) REFERENCES student_lost_reports(id),
+    FOREIGN KEY (case_id) REFERENCES cases(id)
+);
+
+--------------------------------------------------------
+/* =====================================================
+   SECURITY VERIFICATION
+===================================================== */
+
+CREATE TABLE security_verification_requests (
+    id INT IDENTITY PRIMARY KEY,
+    case_id INT NOT NULL,
+    requested_by INT NOT NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (case_id) REFERENCES cases(id),
+    FOREIGN KEY (requested_by) REFERENCES users(id)
+);
+
+--------------------------------------------------------
+
+CREATE TABLE security_verification_decisions (
+    id INT IDENTITY PRIMARY KEY,
+    request_id INT NOT NULL,
+    security_officer_id INT NOT NULL,
+
+    decision NVARCHAR(20)
+        CHECK (decision IN ('APPROVED','REJECTED')),
+
+    note NVARCHAR(300),
+    evidence_image_url NVARCHAR(500) NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+
+    FOREIGN KEY (request_id) REFERENCES security_verification_requests(id),
+    FOREIGN KEY (security_officer_id) REFERENCES users(id)
+);
+
+--------------------------------------------------------
+/* =====================================================
+   RETURN RECEIPTS
+===================================================== */
+
+CREATE TABLE staff_return_receipts (
+    id INT IDENTITY PRIMARY KEY,
+    case_id INT NOT NULL,
+    claim_id INT NOT NULL,
+    staff_id INT NOT NULL,
+
+    returned_at DATETIME DEFAULT GETDATE(),
+    receipt_image_url NVARCHAR(500) NULL,
+
+    FOREIGN KEY (case_id) REFERENCES cases(id),
+    FOREIGN KEY (claim_id) REFERENCES student_claims(id),
+    FOREIGN KEY (staff_id) REFERENCES users(id)
+);
+
+--------------------------------------------------------
+/* =====================================================
+   NOTIFICATIONS
+===================================================== */
+
+CREATE TABLE notifications (
+    id INT IDENTITY PRIMARY KEY,
+    user_id INT NOT NULL,
+    
+    title NVARCHAR(200) NOT NULL,
+    message NVARCHAR(1000) NOT NULL,
+    
+    type NVARCHAR(50) NOT NULL
+        CHECK (type IN (
+            'CLAIM_MATCHED',
+            'CLAIM_APPROVED',
+            'CLAIM_REJECTED',
+            'CLAIM_COMPETING',
+            'ITEM_RETURNED',
+            'NEW_CLAIM',
+            'SECURITY_VERIFICATION_REQUEST',
+            'VERIFICATION_DECISION_MADE'
+        )),
+    
+    related_entity_id INT NULL,
+    related_entity_type NVARCHAR(50) NULL
+        CHECK (related_entity_type IN ('CLAIM', 'LOST_REPORT', 'FOUND_ITEM', 'CASE', 'SECURITY_VERIFICATION_REQUEST')),
+    
+    is_read BIT DEFAULT 0,
+    created_at DATETIME DEFAULT GETDATE(),
+    
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+--------------------------------------------------------
+/* =====================================================
+   INDEXES
+===================================================== */
+
+CREATE INDEX IX_users_role ON users(role);
+
+CREATE INDEX IX_student_lost_reports_student_id ON student_lost_reports(student_id);
+CREATE INDEX IX_student_lost_reports_category_id ON student_lost_reports(category_id);
+
+CREATE INDEX IX_staff_found_items_campus_id ON staff_found_items(campus_id);
+CREATE INDEX IX_staff_found_items_status ON staff_found_items(status);
+
+CREATE INDEX IX_cases_campus_id ON cases(campus_id);
+CREATE INDEX IX_cases_status ON cases(status);
+
+CREATE INDEX IX_student_claims_case_id ON student_claims(case_id);
+CREATE INDEX IX_student_claims_status ON student_claims(status);
+
+CREATE INDEX IX_notifications_user_id ON notifications(user_id);
+CREATE INDEX IX_notifications_user_id_is_read ON notifications(user_id, is_read);
+CREATE INDEX IX_notifications_user_id_created_at ON notifications(user_id, created_at DESC);
+CREATE INDEX IX_notifications_type ON notifications(type);
