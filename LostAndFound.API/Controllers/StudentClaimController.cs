@@ -195,9 +195,97 @@ public class StudentClaimController : ControllerBase
     [Authorize(Roles = "Staff")]
     public async Task<IActionResult> StaffApproveClaim(int id)
     {
+        var staffId = GetCurrentUserId();
         try
         {
-            var claim = await _service.ApproveClaimByStaffAsync(id);
+            var claim = await _service.ApproveClaimByStaffAsync(id, staffId);
+            return Ok(claim);
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(new { Message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Staff reject claim trực tiếp (chỉ khi case chỉ có 1 claim) - Chỉ Staff
+    /// </summary>
+    [HttpPut("{id}/staff-reject")]
+    [Authorize(Roles = "Staff")]
+    public async Task<IActionResult> StaffRejectClaim(int id)
+    {
+        try
+        {
+            var claim = await _service.RejectClaimByStaffAsync(id);
+            return Ok(claim);
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(new { Message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Upload evidence image - Chỉ Staff, chỉ khi claim chưa được approve
+    /// </summary>
+    [HttpPut("{id}/staff-evidence")]
+    [Authorize(Roles = "Staff")]
+    public async Task<IActionResult> UpdateEvidenceByStaff(int id, [FromForm] UpdateStudentClaimEvidenceFormRequest formRequest)
+    {
+        try
+        {
+            // Validate file
+            if (formRequest.EvidenceImage == null || formRequest.EvidenceImage.Length == 0)
+            {
+                return BadRequest(new { Message = "Vui lòng chọn file ảnh evidence." });
+            }
+
+            // Kiểm tra định dạng file
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var fileExtension = Path.GetExtension(formRequest.EvidenceImage.FileName).ToLowerInvariant();
+            
+            if (!allowedExtensions.Contains(fileExtension))
+            {
+                return BadRequest(new { Message = "Định dạng file không hợp lệ. Chỉ chấp nhận: JPG, JPEG, PNG, GIF, WEBP" });
+            }
+
+            // Kiểm tra kích thước file (max 10MB)
+            const long maxFileSize = 10 * 1024 * 1024; // 10MB
+            if (formRequest.EvidenceImage.Length > maxFileSize)
+            {
+                return BadRequest(new { Message = "Kích thước file quá lớn. Tối đa 10MB." });
+            }
+
+            // Upload ảnh lên Cloudinary
+            using var stream = formRequest.EvidenceImage.OpenReadStream();
+            var evidenceImageUrl = await _imageUploadService.UploadImageAsync(stream, formRequest.EvidenceImage.FileName);
+            
+            if (string.IsNullOrEmpty(evidenceImageUrl))
+            {
+                return BadRequest(new { Message = "Lỗi khi upload ảnh. Vui lòng thử lại." });
+            }
+
+            var claim = await _service.UpdateEvidenceByStaffAsync(id, evidenceImageUrl);
+            if (claim == null)
+            {
+                return NotFound(new { Message = "Không tìm thấy claim." });
+            }
             return Ok(claim);
         }
         catch (ArgumentException ex)

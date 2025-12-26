@@ -6,10 +6,12 @@ public interface IStudentClaimService
 {
     Task<StudentClaimResponse> CreateAsync(int studentId, CreateStudentClaimRequest request);
     Task<StudentClaimResponse> CreateClaimForStudentAsync(int lostReportId, int foundItemId);
-    Task<StudentClaimResponse> ApproveClaimByStaffAsync(int claimId);
+    Task<StudentClaimResponse> ApproveClaimByStaffAsync(int claimId, int staffId);
+    Task<StudentClaimResponse> RejectClaimByStaffAsync(int claimId);
     Task<IEnumerable<StudentClaimResponse>> GetMyClaimsAsync(int studentId);
     Task<IEnumerable<StudentClaimResponse>> GetAllAsync(string? status = null, int? caseId = null);
     Task<StudentClaimResponse?> GetByIdAsync(int id, int? studentId = null);
     Task<StudentClaimResponse?> UpdateEvidenceAsync(int id, int studentId, string evidenceImageUrl);
+    Task<StudentClaimResponse?> UpdateEvidenceByStaffAsync(int id, string evidenceImageUrl);
 }
 

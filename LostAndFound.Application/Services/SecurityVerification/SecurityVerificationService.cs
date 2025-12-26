@@ -90,6 +90,12 @@ public class SecurityVerificationService : ISecurityVerificationService
         var claims = await _context.StudentClaims
             .Where(c => c.CaseId.HasValue && caseIds.Contains(c.CaseId.Value))
             .Include(c => c.Student)
+            .Include(c => c.FoundItem)
+                .ThenInclude(f => f.Category)
+            .Include(c => c.FoundItem)
+                .ThenInclude(f => f.Campus)
+            .Include(c => c.LostReport)
+                .ThenInclude(lr => lr.Category)
             .ToListAsync();
 
         return requests.Select(r => MapToResponse(r, claims));
@@ -112,6 +118,12 @@ public class SecurityVerificationService : ISecurityVerificationService
         var claims = await _context.StudentClaims
             .Where(c => c.CaseId == request.CaseId)
             .Include(c => c.Student)
+            .Include(c => c.FoundItem)
+                .ThenInclude(f => f.Category)
+            .Include(c => c.FoundItem)
+                .ThenInclude(f => f.Campus)
+            .Include(c => c.LostReport)
+                .ThenInclude(lr => lr.Category)
             .ToListAsync();
 
         return MapToResponse(request, claims);
@@ -164,6 +176,12 @@ public class SecurityVerificationService : ISecurityVerificationService
         _context.SecurityVerificationDecisions.Add(decision);
         await _context.SaveChangesAsync();
 
+        // Copy EvidenceImageUrl vào claim nếu có
+        if (!string.IsNullOrEmpty(decisionRequest.EvidenceImageUrl))
+        {
+            claim.EvidenceImageUrl = decisionRequest.EvidenceImageUrl;
+        }
+
         // Tự động update claim status và case.successful_claim_id
         if (decisionRequest.Decision == "APPROVED")
         {
@@ -171,8 +189,10 @@ public class SecurityVerificationService : ISecurityVerificationService
             claim.Status = "APPROVED";
             _context.StudentClaims.Update(claim);
 
-            // Update case.successful_claim_id
+            // Update case.successful_claim_id và chuyển status sang COMPLETED
             verificationRequest.Case.SuccessfulClaimId = claim.Id;
+            verificationRequest.Case.Status = "COMPLETED";
+            verificationRequest.Case.ClosedAt = DateTime.Now;
             _context.Cases.Update(verificationRequest.Case);
 
             // Reject các claims khác trong case này
@@ -216,6 +236,12 @@ public class SecurityVerificationService : ISecurityVerificationService
         var claims = await _context.StudentClaims
             .Where(c => c.CaseId == verificationRequest.CaseId)
             .Include(c => c.Student)
+            .Include(c => c.FoundItem)
+                .ThenInclude(f => f.Category)
+            .Include(c => c.FoundItem)
+                .ThenInclude(f => f.Campus)
+            .Include(c => c.LostReport)
+                .ThenInclude(lr => lr.Category)
             .ToListAsync();
 
         // Gửi thông báo cho Staff member đã tạo request: Đã có quyết định từ Security Officer
@@ -299,7 +325,27 @@ public class SecurityVerificationService : ISecurityVerificationService
                     StudentCode = c.Student?.StudentCode,
                     Status = c.Status,
                     EvidenceImageUrl = c.EvidenceImageUrl,
-                    CreatedAt = c.CreatedAt
+                    CreatedAt = c.CreatedAt,
+                    // Found Item Info
+                    FoundItemId = c.FoundItemId,
+                    FoundItemDescription = c.FoundItem?.Description,
+                    FoundItemImageUrl = c.FoundItem?.ImageUrl,
+                    FoundItemStatus = c.FoundItem?.Status,
+                    FoundItemFoundDate = c.FoundItem?.FoundDate,
+                    FoundItemFoundLocation = c.FoundItem?.FoundLocation,
+                    FoundItemCategoryName = c.FoundItem?.Category?.Name,
+                    FoundItemCampusName = c.FoundItem?.Campus?.Name,
+                    FoundItemIdentifyingFeatures = c.FoundItem?.IdentifyingFeatures,
+                    FoundItemClaimPassword = c.FoundItem?.ClaimPassword,
+                    // Lost Report Info
+                    LostReportId = c.LostReportId,
+                    LostReportDescription = c.LostReport?.Description,
+                    LostReportLostDate = c.LostReport?.LostDate,
+                    LostReportLostLocation = c.LostReport?.LostLocation,
+                    LostReportImageUrl = c.LostReport?.ImageUrl,
+                    LostReportCategoryName = c.LostReport?.Category?.Name,
+                    LostReportIdentifyingFeatures = c.LostReport?.IdentifyingFeatures,
+                    LostReportClaimPassword = c.LostReport?.ClaimPassword
                 }).ToList()
         };
     }
